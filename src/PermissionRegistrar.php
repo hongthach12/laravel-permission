@@ -110,7 +110,7 @@ class PermissionRegistrar
      */
     public function registerPermissions(): bool
     {
-        $this->gate->before(function (Authorizable $user, string $ability) {
+        $this->gate->before(function ($user, string $ability) {
             try {
                 if (method_exists($user, 'hasPermissionTo')) {
                     return $user->hasPermissionTo($ability) ?: null;

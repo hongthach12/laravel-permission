@@ -5,6 +5,8 @@ namespace Spatie\Permission\Traits;
 use Spatie\Permission\Guard;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
+use Spatie\Permission\Models\Group;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Exceptions\GuardDoesNotMatch;
@@ -292,6 +294,22 @@ trait HasPermissions
         })->sort()->values();
     }
 
+    public function getPermissionViaGroup(): Collection
+    {
+        $allPermission = collect();
+        foreach ($this->groups as $group) {
+            /** @var Group $group */
+            if ($group->permissions) {
+                $allPermission = $allPermission->merge($group->permissions);
+            }
+            /** @var Role $role */
+            foreach ($group->roles as $role) {
+                $allPermission = $allPermission->merge($role->permissions);
+            }
+        }
+        return $allPermission;
+    }
+
     /**
      * Return all the permissions the model has, both directly and via roles.
      *
@@ -303,6 +321,10 @@ trait HasPermissions
 
         if ($this->roles) {
             $permissions = $permissions->merge($this->getPermissionsViaRoles());
+        }
+
+        if ($this->groups) {
+            $permissions = $permissions->merge($this->getPermissionViaGroup());
         }
 
         return $permissions->sort()->values();
