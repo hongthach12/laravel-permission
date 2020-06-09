@@ -15,6 +15,7 @@ class CacheTest extends TestCase
     protected $cache_load_count = 0;
     protected $cache_run_count = 2; // roles lookup, permissions lookup
     protected $cache_relations_count = 1;
+    protected $cache_relations_group = 1;
 
     protected $registrar;
 
@@ -153,7 +154,8 @@ class CacheTest extends TestCase
 
         $this->resetQueryCount();
         $this->assertTrue($this->testUser->hasPermissionTo('edit-articles'));
-        $this->assertQueryCount($this->cache_init_count + $this->cache_load_count + $this->cache_run_count + $this->cache_relations_count);
+
+        $this->assertQueryCount($this->cache_init_count + $this->cache_load_count + $this->cache_run_count + $this->cache_relations_count + $this->cache_relations_group);
 
         $this->resetQueryCount();
         $this->assertTrue($this->testUser->hasPermissionTo('edit-news'));

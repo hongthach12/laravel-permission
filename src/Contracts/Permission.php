@@ -13,6 +13,8 @@ interface Permission
      */
     public function roles(): BelongsToMany;
 
+    public function groups(): BelongsToMany;
+
     /**
      * Find a permission by its name.
      *
@@ -46,4 +48,6 @@ interface Permission
      * @return Permission
      */
     public static function findOrCreate(string $name, $guardName): self;
+
+
 }

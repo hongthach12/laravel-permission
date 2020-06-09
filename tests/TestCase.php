@@ -3,6 +3,7 @@
 namespace Spatie\Permission\Test;
 
 use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\Contracts\Group;
 use Spatie\Permission\Contracts\Role;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -31,6 +32,9 @@ abstract class TestCase extends Orchestra
     /** @var \Spatie\Permission\Models\Permission */
     protected $testAdminPermission;
 
+    /** @var \Spatie\Permission\Models\Group */
+    protected $testGroup;
+
     public function setUp()
     {
         parent::setUp();
@@ -45,6 +49,8 @@ abstract class TestCase extends Orchestra
         $this->testAdmin = Admin::first();
         $this->testAdminRole = app(Role::class)->find(3);
         $this->testAdminPermission = app(Permission::class)->find(4);
+
+        $this->testGroup = app(Group::class)->find(1);
     }
 
     /**
@@ -116,6 +122,7 @@ abstract class TestCase extends Orchestra
 
         User::create(['email' => 'test@user.com']);
         Admin::create(['email' => 'admin@user.com']);
+
         $app[Role::class]->create(['name' => 'testRole']);
         $app[Role::class]->create(['name' => 'testRole2']);
         $app[Role::class]->create(['name' => 'testAdminRole', 'guard_name' => 'admin']);
@@ -124,6 +131,8 @@ abstract class TestCase extends Orchestra
         $app[Permission::class]->create(['name' => 'edit-blog']);
         $app[Permission::class]->create(['name' => 'admin-permission', 'guard_name' => 'admin']);
         $app[Permission::class]->create(['name' => 'Edit News']);
+
+        $app[Group::class]->create(['name' => 'testGroup']);
     }
 
     /**

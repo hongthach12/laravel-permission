@@ -4,6 +4,7 @@ namespace Spatie\Permission\Models;
 
 use Spatie\Permission\Guard;
 use Illuminate\Support\Collection;
+use Spatie\Permission\Traits\HasGroups;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\PermissionRegistrar;
@@ -16,7 +17,7 @@ use Spatie\Permission\Contracts\Permission as PermissionContract;
 
 class Permission extends Model implements PermissionContract
 {
-    use HasRoles;
+    use HasGroups;
     use RefreshesPermissionCache;
 
     protected $guarded = ['id'];
@@ -57,6 +58,19 @@ class Permission extends Model implements PermissionContract
             config('permission.table_names.role_has_permissions'),
             'permission_id',
             'role_id'
+        );
+    }
+
+    /**
+     * A permission can be applied to group.
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            config('permission.models.group'),
+            config('permission.table_names.group_has_permissions'),
+            'permission_id',
+            'group_id'
         );
     }
 

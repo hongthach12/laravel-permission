@@ -4,6 +4,7 @@ namespace Spatie\Permission;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Collection;
+use Spatie\Permission\Contracts\Group;
 use Spatie\Permission\Contracts\Role;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Spatie\Permission\Contracts\Permission;
@@ -26,9 +27,14 @@ class PermissionRegistrar
 
     /** @var string */
     protected $roleClass;
+    /** @var string */
+    protected $groupClass;
 
     /** @var \Illuminate\Support\Collection */
     protected $permissions;
+
+    /** @var \Illuminate\Support\Collection */
+    protected $groups;
 
     /** @var DateInterval|int */
     public static $cacheExpirationTime;
@@ -36,8 +42,11 @@ class PermissionRegistrar
     /** @var string */
     public static $cacheKey;
 
+    public static $cacheGroupKey;
+
     /** @var string */
     public static $cacheModelKey;
+
 
     /**
      * PermissionRegistrar constructor.
@@ -50,6 +59,7 @@ class PermissionRegistrar
         $this->gate = $gate;
         $this->permissionClass = config('permission.models.permission');
         $this->roleClass = config('permission.models.role');
+        $this->groupClass = config('permission.models.group');
 
         $this->cacheManager = $cacheManager;
         $this->initializeCache();
@@ -68,6 +78,9 @@ class PermissionRegistrar
 
         self::$cacheKey = config('permission.cache.key');
         self::$cacheModelKey = config('permission.cache.model_key');
+        self::$cacheGroupKey = config('permission.cache.key_group');
+
+
 
         $this->cache = $this->getCacheStoreFromConfig();
     }
@@ -145,6 +158,25 @@ class PermissionRegistrar
         return $permissions;
     }
 
+    public function getGroups(array $params = []): Collection
+    {
+        if ($this->groups === null) {
+            $this->groups = $this->cache->remember(self::$cacheGroupKey, self::$cacheExpirationTime, function () {
+                return $this->getGroupClass()
+                                ->with('roles')
+                                 ->get();
+            });
+        }
+
+        $groups = clone $this->groups;
+
+        foreach ($params as $attr => $value) {
+            $groups = $groups->where($attr, $value);
+        }
+
+        return $groups;
+    }
+
     /**
      * Get an instance of the permission class.
      *
@@ -158,6 +190,13 @@ class PermissionRegistrar
     public function setPermissionClass($permissionClass)
     {
         $this->permissionClass = $permissionClass;
+
+        return $this;
+    }
+
+    public function setGroupClass($groupClass)
+    {
+        $this->groupClass = $groupClass;
 
         return $this;
     }
@@ -180,5 +219,15 @@ class PermissionRegistrar
     public function getCacheStore(): \Illuminate\Contracts\Cache\Store
     {
         return $this->cache->getStore();
+    }
+
+    /**
+     * Get an instance of the role class.
+     *
+     * @return \Spatie\Permission\Contracts\Group
+     */
+    public function getGroupClass(): Group
+    {
+        return app($this->groupClass);
     }
 }

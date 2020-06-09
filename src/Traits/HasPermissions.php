@@ -65,7 +65,11 @@ trait HasPermissions
             return array_merge($result, $permission->roles->all());
         }, []));
 
-        return $query->where(function ($query) use ($permissions, $rolesWithPermissions) {
+        $groupWithPermissions = array_unique(array_reduce($permissions, function ($result, $permission) {
+            return array_merge($result, $permission->groups->all());
+        }, []));
+
+        return $query->where(function ($query) use ($permissions, $rolesWithPermissions, $groupWithPermissions) {
             $query->whereHas('permissions', function ($query) use ($permissions) {
                 $query->where(function ($query) use ($permissions) {
                     foreach ($permissions as $permission) {
@@ -78,6 +82,16 @@ trait HasPermissions
                     $query->where(function ($query) use ($rolesWithPermissions) {
                         foreach ($rolesWithPermissions as $role) {
                             $query->orWhere(config('permission.table_names.roles').'.id', $role->id);
+                        }
+                    });
+                });
+            }
+
+            if (count($groupWithPermissions) > 0) {
+                $query->orWhereHas('groups', function ($query) use ($groupWithPermissions) {
+                    $query->where(function ($query) use ($groupWithPermissions) {
+                        foreach ($groupWithPermissions as $group) {
+                            $query->orWhere(config('permission.table_names.groups').'.id', $group->id);
                         }
                     });
                 });
@@ -138,7 +152,9 @@ trait HasPermissions
             throw new PermissionDoesNotExist;
         }
 
-        return $this->hasDirectPermission($permission) || $this->hasPermissionViaRole($permission);
+        return $this->hasDirectPermission($permission)
+                || $this->hasPermissionViaRole($permission)
+                || $this->hasPermissionViaGroup($permission);
     }
 
     /**
@@ -230,7 +246,7 @@ trait HasPermissions
      *
      * @param string|int|\Spatie\Permission\Contracts\Permission $permission
      *
-     * @return bool
+     * @return bool/
      * @throws PermissionDoesNotExist
      */
     public function hasDirectPermission($permission): bool

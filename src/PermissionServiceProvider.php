@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
+use Spatie\Permission\Contracts\Group as GroupContract;
 use Spatie\Permission\Contracts\Role as RoleContract;
 use Spatie\Permission\Contracts\Permission as PermissionContract;
 
@@ -64,6 +65,7 @@ class PermissionServiceProvider extends ServiceProvider
 
         $this->app->bind(PermissionContract::class, $config['permission']);
         $this->app->bind(RoleContract::class, $config['role']);
+        $this->app->bind(GroupContract::class, $config['group']);
     }
 
     protected function registerBladeExtensions()

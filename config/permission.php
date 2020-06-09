@@ -26,6 +26,9 @@ return [
 
         'role' => Spatie\Permission\Models\Role::class,
 
+
+        'group' => Spatie\Permission\Models\Group::class,
+
     ],
 
     'table_names' => [
@@ -69,6 +72,14 @@ return [
          */
 
         'role_has_permissions' => 'role_has_permissions',
+
+        'groups' => 'groups',
+
+        'model_has_groups' => 'model_has_groups',
+
+        'group_has_permissions' => 'group_has_permissions',
+
+        'group_has_roles' => 'group_has_roles',
     ],
 
     'column_names' => [
@@ -106,6 +117,8 @@ return [
          */
 
         'key' => 'spatie.permission.cache',
+
+        'key_group' => 'spatie.group.cache',
 
         /*
          * When checking for a permission against a model by passing a Permission

@@ -12,6 +12,7 @@ trait HasRoles
 {
     use HasPermissions;
 
+    /** @var \Spatie\Permission\Contracts\Role $roleClass */
     private $roleClass;
 
     public static function bootHasRoles()
@@ -25,6 +26,9 @@ trait HasRoles
         });
     }
 
+    /**
+     * @return  \Spatie\Permission\Contracts\Role
+     */
     public function getRoleClass()
     {
         if (! isset($this->roleClass)) {
@@ -181,17 +185,36 @@ trait HasRoles
         if (is_string($roles) && false !== strpos($roles, '|')) {
             $roles = $this->convertPipeToArray($roles);
         }
+        /** @var Collection $userRole */
+        if (!empty($roles)) {
+            $userRole = $this->roles;
+
+            $groups = $this->groups;
+            if (!empty($groups)) {
+                $groupIds = $groups->pluck('id');
+                // get all group role
+                $groupClass = $this->getGroupClass();
+                foreach ($groupIds as $groupId) {
+                    $group = $groupClass->getGroups(['id' => $groupId])->first();
+                    if ($group && $group->roles->count()) {
+                        $userRole = $userRole->merge($group->roles);
+                    }
+                }
+            }
+        } else {
+            return false;
+        }
 
         if (is_string($roles)) {
-            return $this->roles->contains('name', $roles);
+            return $userRole->contains('name', $roles);
         }
 
         if (is_int($roles)) {
-            return $this->roles->contains('id', $roles);
+            return $userRole->contains('id', $roles);
         }
 
         if ($roles instanceof Role) {
-            return $this->roles->contains('id', $roles->id);
+            return $userRole->contains('id', $roles->id);
         }
 
         if (is_array($roles)) {
