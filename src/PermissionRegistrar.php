@@ -128,8 +128,9 @@ class PermissionRegistrar
     public function forgetCachedPermissions()
     {
         $this->permissions = null;
+        $this->groups = null;
 
-        return $this->cache->forget(self::$cacheKey);
+        return $this->cache->forget(self::$cacheKey) && $this->cache->forget(self::$cacheGroupKey);
     }
 
     /**
